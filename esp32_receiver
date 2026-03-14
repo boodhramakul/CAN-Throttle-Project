@@ -1,1 +1,31 @@
+#include <SPI.h>
+#include <mcp2515.h>
 
+struct can_frame canMsg;
+MCP2515 mcp2515(5);
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  SPI.begin(18, 19, 23, 5);
+  mcp2515.reset();
+
+ 
+  mcp2515.setBitrate(CAN_125KBPS, MCP_8MHZ);
+  mcp2515.setNormalMode();
+
+  Serial.println("ESP32 throttle receiver ready");
+}
+
+void loop() {
+  while (mcp2515.readMessage(&canMsg) == MCP2515::ERROR_OK) {
+    if (canMsg.can_id == 0x100 && canMsg.can_dlc >= 1) {
+      int throttle = canMsg.data[0];
+
+      Serial.print("Throttle received: ");
+      Serial.print(throttle);
+      Serial.println("%");
+    }
+  }
+}
