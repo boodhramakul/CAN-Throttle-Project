@@ -1,1 +1,51 @@
+#include <SPI.h>
+#include <mcp2515.h>
 
+struct can_frame canMsg;
+MCP2515 mcp2515(10);
+
+const int potPin = A0;
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  SPI.begin();
+  mcp2515.reset();
+
+ 
+  mcp2515.setBitrate(CAN_125KBPS, MCP_8MHZ);
+  mcp2515.setNormalMode();
+
+  canMsg.can_id  = 0x100;
+  canMsg.can_dlc = 2;
+
+  Serial.println("UNO Q throttle sender ready");
+}
+
+void loop() {
+  int raw = analogRead(potPin);
+
+  int throttle = map(raw, 0, 1023, 0, 100);
+  throttle = constrain(throttle, 0, 100);
+
+  canMsg.data[0] = (uint8_t)throttle;
+  canMsg.data[1] = 0x00;
+
+  MCP2515::ERROR err = mcp2515.sendMessage(&canMsg);
+
+  Serial.print("Raw: ");
+  Serial.print(raw);
+  Serial.print("  Throttle: ");
+  Serial.print(throttle);
+  Serial.print("%  ");
+
+  if (err == MCP2515::ERROR_OK) {
+    Serial.println("Sent OK");
+  } else {
+    Serial.print("Send error: ");
+    Serial.println((int)err);
+  }
+
+  delay(100);
+}
