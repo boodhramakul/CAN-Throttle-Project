@@ -123,5 +123,91 @@ If the throttle direction is reversed, swap the two outer pins.
 ```cpp
 #include <SPI.h>
 #include <mcp2515.h>
+```
+## MCP2515 Library
+Use the autowp MCP2515 library.
 
-### M
+## CAN Configuration
+### Bitrate
+Both nodes use:
+125 kbps
+
+### Crystal Configuration
+Each MCP2515 module must match its actual crystal frequency:
+MCP_8MHZ for modules marked 8.000
+MCP_16MHZ for modules marked 16.000
+This setting is critical for proper communication.
+
+## Project Development Stages
+
+### Stage 1: Fixed CAN Frame Test
+Before integrating the potentiometer, a fixed CAN frame was transmitted from the Arduino UNO Q to the ESP32.
+
+### Test Frame
+CAN ID: 0x100
+DLC: 4
+Data: 11 22 33 44
+
+### Purpose
+This stage validated:
+- SPI wiring
+- MCP2515 initialization
+- CAN bus termination
+- Successful transmission and reception
+
+### Expected Receiver Output
+ID: 0x100 DLC: 4 DATA: 11 22 33 44
+Stage 2: Potentiometer Throttle Transmission
+After successful basic communication, the potentiometer was added to the Arduino UNO Q.
+
+### Sender Behavior
+The Arduino:
+- Reads the analog value on A0
+- Converts it into a percentage
+-Inserts the value into the CAN frame
+- Sends it cyclically over CAN
+
+### Receiver Behavior
+The ESP32:
+- Waits for CAN frames
+- Filters for CAN ID 0x100
+- Extracts the first data byte
+- Interprets it as throttle percentage
+
+## How to Run the Project
+-Connect the potentiometer to the Arduino UNO Q
+- Connect both MCP2515 modules to their respective microcontrollers
+- Connect the CAN bus:
+- CANH ↔ CANH
+- CANL ↔ CANL
+- GND ↔ GND
+- Verify the bus resistance between CANH and CANL with power off (expected value: ~60 Ω)
+- Upload the sender sketch to the Arduino UNO Q
+- Upload the receiver sketch to the ESP32
+- Open both Serial Monitors
+- Rotate the potentiometer and observe transmitted and received throttle values
+### Expected Results
+### Arduino UNO Q Serial Monitor
+```
+Raw: 105  Throttle: 10%  Sent OK
+Raw: 512  Throttle: 50%  Sent OK
+Raw: 918  Throttle: 89%  Sent OK
+```
+### ESP32 Serial Monitor
+```
+Throttle received: 10%
+Throttle received: 50%
+Throttle received: 89%
+```
+## Validation
+The following tests were completed successfully during development:
+- Local loopback test on Arduino UNO Q MCP2515
+- Local loopback test on ESP32 MCP2515
+- Fixed CAN frame transmission test
+- Live CAN bus communication verification
+- Potentiometer-based throttle transmission
+- Reception and decoding of throttle value on ESP32
+- Bus termination verification using resistance measurement
+
+ ## Conclusion
+A functional CAN-based throttle input system was developed using an Arduino UNO Q, an ESP32, and MCP2515 CAN modules. The project successfully demonstrated analog throttle acquisition, CAN message creation, transmission over a properly terminated CAN bus, and real-time reception and decoding on a second microcontroller. This project provides a solid foundation for more advanced automotive, EV, or embedded control applications.
