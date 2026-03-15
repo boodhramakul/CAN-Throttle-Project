@@ -1,8 +1,11 @@
 # CAN-Based Throttle Input System using Arduino UNO Q and ESP32
+##  Team members: 
+              Ghoorah Hemshini
+              Boodhram Ritviksingh
+Both team members contributed jointly to the hardware setup, CAN communication testing, debugging, implementation, and documentation.
+
 ## Overview
-
 This project implements a CAN-based throttle input system using an Arduino UNO Q and an ESP32, connected through MCP2515 CAN controller modules.
-
 The project was developed in two stages:
 
 1. **Fixed CAN frame transmission test**
